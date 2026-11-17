@@ -1,0 +1,42 @@
+
+name: Build RostDroid APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Unpack RostDroid
+        run: |
+          mkdir -p rostdroid
+          unzip -q RostDroid_Android_Project.zip -d rostdroid
+          find rostdroid -name settings.gradle -print
+
+      - name: Build APK
+        run: |
+          PROJECT=$(find rostdroid -name settings.gradle -printf '%h\n' | head -n 1)
+          test -n "$PROJECT"
+          cd "$PROJECT"
+          gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RostDroid-APK
+          path: rostdroid/**/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
