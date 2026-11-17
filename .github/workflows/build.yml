@@ -18,25 +18,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Unpack RostDroid
         run: |
-          mkdir -p rostdroid
-          unzip -q RostDroid_Android_Project.zip -d rostdroid
-          find rostdroid -name settings.gradle -print
+          unzip -q RostDroid_Android_Project.zip -d project
 
       - name: Build APK
         run: |
-          PROJECT=$(find rostdroid -name settings.gradle -printf '%h\n' | head -n 1)
-          test -n "$PROJECT"
-          cd "$PROJECT"
-          gradle assembleDebug --no-daemon
+          cd project
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: RostDroid-APK
-          path: rostdroid/**/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          path: project/app/build/outputs/apk/debug/*.apk
